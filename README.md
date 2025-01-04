@@ -29,4 +29,18 @@ a(() => 10);
 
 ## Demo
 
-<https://xtompie.github.io/rensenjs/> -> Open console to see result
+- <https://xtompie.github.io/rensenjs/simple.html>
+
+Example from Usage section, open console to see result
+
+- <https://xtompie.github.io/rensenjs/excell.html>
+
+Empty excell, in console type:
+
+```javascript
+A1(() => 1);
+B1(() => 2);
+C1(() => A1() + A2());
+```
+
+- <https://xtompie.github.io/rensenjs/cart.html>

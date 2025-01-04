@@ -1,0 +1,780 @@
+<script>
+const Rensen = (() => {
+    class Rensen {
+        static watchers = new Map();
+        static inputs = new Map();
+        static stack = [];
+        static instances = new Map();
+        static nextId = 1;
+        constructor(compute) {
+            this.id = Rensen.nextId++;
+            Rensen.instances.set(this.id, this);
+            this.compute = compute;
+            this.value = undefined;
+            this.recompute();
+        }
+        get() {
+            if (Rensen.stack.length > 0) {
+                const current = Rensen.stack[Rensen.stack.length - 1];
+                if (!Rensen.watchers.has(this.id)) {
+                    Rensen.watchers.set(this.id, []);
+                }
+                Rensen.watchers.get(this.id).push(current.id);
+                if (!Rensen.inputs.has(current.id)) {
+                    Rensen.inputs.set(current.id, []);
+                }
+                Rensen.inputs.get(current.id).push(this.id);
+            }
+            return this.value;
+        }
+        set(newCompute) {
+            this.compute = newCompute;
+            this.recompute();
+        }
+        clearDependencies() {
+            if (Rensen.inputs.has(this.id)) {
+                const inputIds = Rensen.inputs.get(this.id);
+                inputIds.forEach((inputId) => {
+                    if (Rensen.watchers.has(inputId)) {
+                        const watchersForInput = Rensen.watchers.get(inputId);
+                        Rensen.watchers.set(
+                            inputId,
+                            watchersForInput.filter((watcherId) => watcherId !== this.id)
+                        );
+                    }
+                });
+                Rensen.inputs.delete(this.id);
+            }
+        }
+        recompute() {
+            this.clearDependencies();
+            Rensen.stack.push(this);
+
+            const newValue = this.compute ? this.compute() : undefined;
+            if (newValue !== this.value) {
+                this.value = newValue;
+                this.notifyWatchers();
+            }
+
+            Rensen.stack.pop();
+        }
+        notifyWatchers() {
+            if (Rensen.watchers.has(this.id)) {
+                const watchersList = Rensen.watchers.get(this.id);
+                watchersList.forEach((watcherId) => {
+                    const watcherObj = Rensen.instances.get(watcherId);
+                    if (watcherObj) {
+                        watcherObj.recompute();
+                    }
+                });
+            }
+        }
+        static R(compute) {
+            const core = new Rensen(compute);
+
+            function reactive(...args) {
+                if (args.length > 0) {
+
+                    core.set(args[0]);
+                } else {
+
+                    return core.get();
+                }
+            }
+            reactive.__core = core;
+            return reactive;
+        }
+
+        static destroy(reactive) {
+            if (!reactive.__core) return;
+            const core = reactive.__core;
+            Rensen.watchers.delete(core.id);
+            Rensen.inputs.delete(core.id);
+            Rensen.instances.delete(core.id);
+            core.compute = null;
+            core.value = null;
+        }
+    }
+    return Rensen;
+})();
+const R = (c) => Rensen.R(c);</script>
+<table border="1">
+    <tr>
+        <td></td>
+                    <th align="left">A</th>
+                    <th align="left">B</th>
+                    <th align="left">C</th>
+                    <th align="left">D</th>
+                    <th align="left">E</th>
+                    <th align="left">F</th>
+                    <th align="left">G</th>
+                    <th align="left">H</th>
+                    <th align="left">I</th>
+                    <th align="left">J</th>
+            </tr>
+            <tr>
+            <th>1</th>
+                            <td  id="A1"></td>
+                            <td  id="B1"></td>
+                            <td  id="C1"></td>
+                            <td  id="D1"></td>
+                            <td  id="E1"></td>
+                            <td  id="F1"></td>
+                            <td  id="G1"></td>
+                            <td  id="H1"></td>
+                            <td  id="I1"></td>
+                            <td  id="J1"></td>
+                    </tr>
+            <tr>
+            <th>2</th>
+                            <td  id="A2"></td>
+                            <td  id="B2"></td>
+                            <td  id="C2"></td>
+                            <td  id="D2"></td>
+                            <td  id="E2"></td>
+                            <td  id="F2"></td>
+                            <td  id="G2"></td>
+                            <td  id="H2"></td>
+                            <td  id="I2"></td>
+                            <td  id="J2"></td>
+                    </tr>
+            <tr>
+            <th>3</th>
+                            <td  id="A3"></td>
+                            <td  id="B3"></td>
+                            <td  id="C3"></td>
+                            <td  id="D3"></td>
+                            <td  id="E3"></td>
+                            <td  id="F3"></td>
+                            <td  id="G3"></td>
+                            <td  id="H3"></td>
+                            <td  id="I3"></td>
+                            <td  id="J3"></td>
+                    </tr>
+            <tr>
+            <th>4</th>
+                            <td  id="A4"></td>
+                            <td  id="B4"></td>
+                            <td  id="C4"></td>
+                            <td  id="D4"></td>
+                            <td  id="E4"></td>
+                            <td  id="F4"></td>
+                            <td  id="G4"></td>
+                            <td  id="H4"></td>
+                            <td  id="I4"></td>
+                            <td  id="J4"></td>
+                    </tr>
+            <tr>
+            <th>5</th>
+                            <td  id="A5"></td>
+                            <td  id="B5"></td>
+                            <td  id="C5"></td>
+                            <td  id="D5"></td>
+                            <td  id="E5"></td>
+                            <td  id="F5"></td>
+                            <td  id="G5"></td>
+                            <td  id="H5"></td>
+                            <td  id="I5"></td>
+                            <td  id="J5"></td>
+                    </tr>
+            <tr>
+            <th>6</th>
+                            <td  id="A6"></td>
+                            <td  id="B6"></td>
+                            <td  id="C6"></td>
+                            <td  id="D6"></td>
+                            <td  id="E6"></td>
+                            <td  id="F6"></td>
+                            <td  id="G6"></td>
+                            <td  id="H6"></td>
+                            <td  id="I6"></td>
+                            <td  id="J6"></td>
+                    </tr>
+            <tr>
+            <th>7</th>
+                            <td  id="A7"></td>
+                            <td  id="B7"></td>
+                            <td  id="C7"></td>
+                            <td  id="D7"></td>
+                            <td  id="E7"></td>
+                            <td  id="F7"></td>
+                            <td  id="G7"></td>
+                            <td  id="H7"></td>
+                            <td  id="I7"></td>
+                            <td  id="J7"></td>
+                    </tr>
+            <tr>
+            <th>8</th>
+                            <td  id="A8"></td>
+                            <td  id="B8"></td>
+                            <td  id="C8"></td>
+                            <td  id="D8"></td>
+                            <td  id="E8"></td>
+                            <td  id="F8"></td>
+                            <td  id="G8"></td>
+                            <td  id="H8"></td>
+                            <td  id="I8"></td>
+                            <td  id="J8"></td>
+                    </tr>
+            <tr>
+            <th>9</th>
+                            <td  id="A9"></td>
+                            <td  id="B9"></td>
+                            <td  id="C9"></td>
+                            <td  id="D9"></td>
+                            <td  id="E9"></td>
+                            <td  id="F9"></td>
+                            <td  id="G9"></td>
+                            <td  id="H9"></td>
+                            <td  id="I9"></td>
+                            <td  id="J9"></td>
+                    </tr>
+            <tr>
+            <th>10</th>
+                            <td  id="A10"></td>
+                            <td  id="B10"></td>
+                            <td  id="C10"></td>
+                            <td  id="D10"></td>
+                            <td  id="E10"></td>
+                            <td  id="F10"></td>
+                            <td  id="G10"></td>
+                            <td  id="H10"></td>
+                            <td  id="I10"></td>
+                            <td  id="J10"></td>
+                    </tr>
+    </table>
+<script>
+const table = {};
+</script>
+                    <script>
+        const A1 = R(() => '');
+        table['A1'] = A1;
+        R(() => document.getElementById('A1').innerText = A1());
+        </script>
+                    <script>
+        const B1 = R(() => '');
+        table['B1'] = B1;
+        R(() => document.getElementById('B1').innerText = B1());
+        </script>
+                    <script>
+        const C1 = R(() => '');
+        table['C1'] = C1;
+        R(() => document.getElementById('C1').innerText = C1());
+        </script>
+                    <script>
+        const D1 = R(() => '');
+        table['D1'] = D1;
+        R(() => document.getElementById('D1').innerText = D1());
+        </script>
+                    <script>
+        const E1 = R(() => '');
+        table['E1'] = E1;
+        R(() => document.getElementById('E1').innerText = E1());
+        </script>
+                    <script>
+        const F1 = R(() => '');
+        table['F1'] = F1;
+        R(() => document.getElementById('F1').innerText = F1());
+        </script>
+                    <script>
+        const G1 = R(() => '');
+        table['G1'] = G1;
+        R(() => document.getElementById('G1').innerText = G1());
+        </script>
+                    <script>
+        const H1 = R(() => '');
+        table['H1'] = H1;
+        R(() => document.getElementById('H1').innerText = H1());
+        </script>
+                    <script>
+        const I1 = R(() => '');
+        table['I1'] = I1;
+        R(() => document.getElementById('I1').innerText = I1());
+        </script>
+                    <script>
+        const J1 = R(() => '');
+        table['J1'] = J1;
+        R(() => document.getElementById('J1').innerText = J1());
+        </script>
+                        <script>
+        const A2 = R(() => '');
+        table['A2'] = A2;
+        R(() => document.getElementById('A2').innerText = A2());
+        </script>
+                    <script>
+        const B2 = R(() => '');
+        table['B2'] = B2;
+        R(() => document.getElementById('B2').innerText = B2());
+        </script>
+                    <script>
+        const C2 = R(() => '');
+        table['C2'] = C2;
+        R(() => document.getElementById('C2').innerText = C2());
+        </script>
+                    <script>
+        const D2 = R(() => '');
+        table['D2'] = D2;
+        R(() => document.getElementById('D2').innerText = D2());
+        </script>
+                    <script>
+        const E2 = R(() => '');
+        table['E2'] = E2;
+        R(() => document.getElementById('E2').innerText = E2());
+        </script>
+                    <script>
+        const F2 = R(() => '');
+        table['F2'] = F2;
+        R(() => document.getElementById('F2').innerText = F2());
+        </script>
+                    <script>
+        const G2 = R(() => '');
+        table['G2'] = G2;
+        R(() => document.getElementById('G2').innerText = G2());
+        </script>
+                    <script>
+        const H2 = R(() => '');
+        table['H2'] = H2;
+        R(() => document.getElementById('H2').innerText = H2());
+        </script>
+                    <script>
+        const I2 = R(() => '');
+        table['I2'] = I2;
+        R(() => document.getElementById('I2').innerText = I2());
+        </script>
+                    <script>
+        const J2 = R(() => '');
+        table['J2'] = J2;
+        R(() => document.getElementById('J2').innerText = J2());
+        </script>
+                        <script>
+        const A3 = R(() => '');
+        table['A3'] = A3;
+        R(() => document.getElementById('A3').innerText = A3());
+        </script>
+                    <script>
+        const B3 = R(() => '');
+        table['B3'] = B3;
+        R(() => document.getElementById('B3').innerText = B3());
+        </script>
+                    <script>
+        const C3 = R(() => '');
+        table['C3'] = C3;
+        R(() => document.getElementById('C3').innerText = C3());
+        </script>
+                    <script>
+        const D3 = R(() => '');
+        table['D3'] = D3;
+        R(() => document.getElementById('D3').innerText = D3());
+        </script>
+                    <script>
+        const E3 = R(() => '');
+        table['E3'] = E3;
+        R(() => document.getElementById('E3').innerText = E3());
+        </script>
+                    <script>
+        const F3 = R(() => '');
+        table['F3'] = F3;
+        R(() => document.getElementById('F3').innerText = F3());
+        </script>
+                    <script>
+        const G3 = R(() => '');
+        table['G3'] = G3;
+        R(() => document.getElementById('G3').innerText = G3());
+        </script>
+                    <script>
+        const H3 = R(() => '');
+        table['H3'] = H3;
+        R(() => document.getElementById('H3').innerText = H3());
+        </script>
+                    <script>
+        const I3 = R(() => '');
+        table['I3'] = I3;
+        R(() => document.getElementById('I3').innerText = I3());
+        </script>
+                    <script>
+        const J3 = R(() => '');
+        table['J3'] = J3;
+        R(() => document.getElementById('J3').innerText = J3());
+        </script>
+                        <script>
+        const A4 = R(() => '');
+        table['A4'] = A4;
+        R(() => document.getElementById('A4').innerText = A4());
+        </script>
+                    <script>
+        const B4 = R(() => '');
+        table['B4'] = B4;
+        R(() => document.getElementById('B4').innerText = B4());
+        </script>
+                    <script>
+        const C4 = R(() => '');
+        table['C4'] = C4;
+        R(() => document.getElementById('C4').innerText = C4());
+        </script>
+                    <script>
+        const D4 = R(() => '');
+        table['D4'] = D4;
+        R(() => document.getElementById('D4').innerText = D4());
+        </script>
+                    <script>
+        const E4 = R(() => '');
+        table['E4'] = E4;
+        R(() => document.getElementById('E4').innerText = E4());
+        </script>
+                    <script>
+        const F4 = R(() => '');
+        table['F4'] = F4;
+        R(() => document.getElementById('F4').innerText = F4());
+        </script>
+                    <script>
+        const G4 = R(() => '');
+        table['G4'] = G4;
+        R(() => document.getElementById('G4').innerText = G4());
+        </script>
+                    <script>
+        const H4 = R(() => '');
+        table['H4'] = H4;
+        R(() => document.getElementById('H4').innerText = H4());
+        </script>
+                    <script>
+        const I4 = R(() => '');
+        table['I4'] = I4;
+        R(() => document.getElementById('I4').innerText = I4());
+        </script>
+                    <script>
+        const J4 = R(() => '');
+        table['J4'] = J4;
+        R(() => document.getElementById('J4').innerText = J4());
+        </script>
+                        <script>
+        const A5 = R(() => '');
+        table['A5'] = A5;
+        R(() => document.getElementById('A5').innerText = A5());
+        </script>
+                    <script>
+        const B5 = R(() => '');
+        table['B5'] = B5;
+        R(() => document.getElementById('B5').innerText = B5());
+        </script>
+                    <script>
+        const C5 = R(() => '');
+        table['C5'] = C5;
+        R(() => document.getElementById('C5').innerText = C5());
+        </script>
+                    <script>
+        const D5 = R(() => '');
+        table['D5'] = D5;
+        R(() => document.getElementById('D5').innerText = D5());
+        </script>
+                    <script>
+        const E5 = R(() => '');
+        table['E5'] = E5;
+        R(() => document.getElementById('E5').innerText = E5());
+        </script>
+                    <script>
+        const F5 = R(() => '');
+        table['F5'] = F5;
+        R(() => document.getElementById('F5').innerText = F5());
+        </script>
+                    <script>
+        const G5 = R(() => '');
+        table['G5'] = G5;
+        R(() => document.getElementById('G5').innerText = G5());
+        </script>
+                    <script>
+        const H5 = R(() => '');
+        table['H5'] = H5;
+        R(() => document.getElementById('H5').innerText = H5());
+        </script>
+                    <script>
+        const I5 = R(() => '');
+        table['I5'] = I5;
+        R(() => document.getElementById('I5').innerText = I5());
+        </script>
+                    <script>
+        const J5 = R(() => '');
+        table['J5'] = J5;
+        R(() => document.getElementById('J5').innerText = J5());
+        </script>
+                        <script>
+        const A6 = R(() => '');
+        table['A6'] = A6;
+        R(() => document.getElementById('A6').innerText = A6());
+        </script>
+                    <script>
+        const B6 = R(() => '');
+        table['B6'] = B6;
+        R(() => document.getElementById('B6').innerText = B6());
+        </script>
+                    <script>
+        const C6 = R(() => '');
+        table['C6'] = C6;
+        R(() => document.getElementById('C6').innerText = C6());
+        </script>
+                    <script>
+        const D6 = R(() => '');
+        table['D6'] = D6;
+        R(() => document.getElementById('D6').innerText = D6());
+        </script>
+                    <script>
+        const E6 = R(() => '');
+        table['E6'] = E6;
+        R(() => document.getElementById('E6').innerText = E6());
+        </script>
+                    <script>
+        const F6 = R(() => '');
+        table['F6'] = F6;
+        R(() => document.getElementById('F6').innerText = F6());
+        </script>
+                    <script>
+        const G6 = R(() => '');
+        table['G6'] = G6;
+        R(() => document.getElementById('G6').innerText = G6());
+        </script>
+                    <script>
+        const H6 = R(() => '');
+        table['H6'] = H6;
+        R(() => document.getElementById('H6').innerText = H6());
+        </script>
+                    <script>
+        const I6 = R(() => '');
+        table['I6'] = I6;
+        R(() => document.getElementById('I6').innerText = I6());
+        </script>
+                    <script>
+        const J6 = R(() => '');
+        table['J6'] = J6;
+        R(() => document.getElementById('J6').innerText = J6());
+        </script>
+                        <script>
+        const A7 = R(() => '');
+        table['A7'] = A7;
+        R(() => document.getElementById('A7').innerText = A7());
+        </script>
+                    <script>
+        const B7 = R(() => '');
+        table['B7'] = B7;
+        R(() => document.getElementById('B7').innerText = B7());
+        </script>
+                    <script>
+        const C7 = R(() => '');
+        table['C7'] = C7;
+        R(() => document.getElementById('C7').innerText = C7());
+        </script>
+                    <script>
+        const D7 = R(() => '');
+        table['D7'] = D7;
+        R(() => document.getElementById('D7').innerText = D7());
+        </script>
+                    <script>
+        const E7 = R(() => '');
+        table['E7'] = E7;
+        R(() => document.getElementById('E7').innerText = E7());
+        </script>
+                    <script>
+        const F7 = R(() => '');
+        table['F7'] = F7;
+        R(() => document.getElementById('F7').innerText = F7());
+        </script>
+                    <script>
+        const G7 = R(() => '');
+        table['G7'] = G7;
+        R(() => document.getElementById('G7').innerText = G7());
+        </script>
+                    <script>
+        const H7 = R(() => '');
+        table['H7'] = H7;
+        R(() => document.getElementById('H7').innerText = H7());
+        </script>
+                    <script>
+        const I7 = R(() => '');
+        table['I7'] = I7;
+        R(() => document.getElementById('I7').innerText = I7());
+        </script>
+                    <script>
+        const J7 = R(() => '');
+        table['J7'] = J7;
+        R(() => document.getElementById('J7').innerText = J7());
+        </script>
+                        <script>
+        const A8 = R(() => '');
+        table['A8'] = A8;
+        R(() => document.getElementById('A8').innerText = A8());
+        </script>
+                    <script>
+        const B8 = R(() => '');
+        table['B8'] = B8;
+        R(() => document.getElementById('B8').innerText = B8());
+        </script>
+                    <script>
+        const C8 = R(() => '');
+        table['C8'] = C8;
+        R(() => document.getElementById('C8').innerText = C8());
+        </script>
+                    <script>
+        const D8 = R(() => '');
+        table['D8'] = D8;
+        R(() => document.getElementById('D8').innerText = D8());
+        </script>
+                    <script>
+        const E8 = R(() => '');
+        table['E8'] = E8;
+        R(() => document.getElementById('E8').innerText = E8());
+        </script>
+                    <script>
+        const F8 = R(() => '');
+        table['F8'] = F8;
+        R(() => document.getElementById('F8').innerText = F8());
+        </script>
+                    <script>
+        const G8 = R(() => '');
+        table['G8'] = G8;
+        R(() => document.getElementById('G8').innerText = G8());
+        </script>
+                    <script>
+        const H8 = R(() => '');
+        table['H8'] = H8;
+        R(() => document.getElementById('H8').innerText = H8());
+        </script>
+                    <script>
+        const I8 = R(() => '');
+        table['I8'] = I8;
+        R(() => document.getElementById('I8').innerText = I8());
+        </script>
+                    <script>
+        const J8 = R(() => '');
+        table['J8'] = J8;
+        R(() => document.getElementById('J8').innerText = J8());
+        </script>
+                        <script>
+        const A9 = R(() => '');
+        table['A9'] = A9;
+        R(() => document.getElementById('A9').innerText = A9());
+        </script>
+                    <script>
+        const B9 = R(() => '');
+        table['B9'] = B9;
+        R(() => document.getElementById('B9').innerText = B9());
+        </script>
+                    <script>
+        const C9 = R(() => '');
+        table['C9'] = C9;
+        R(() => document.getElementById('C9').innerText = C9());
+        </script>
+                    <script>
+        const D9 = R(() => '');
+        table['D9'] = D9;
+        R(() => document.getElementById('D9').innerText = D9());
+        </script>
+                    <script>
+        const E9 = R(() => '');
+        table['E9'] = E9;
+        R(() => document.getElementById('E9').innerText = E9());
+        </script>
+                    <script>
+        const F9 = R(() => '');
+        table['F9'] = F9;
+        R(() => document.getElementById('F9').innerText = F9());
+        </script>
+                    <script>
+        const G9 = R(() => '');
+        table['G9'] = G9;
+        R(() => document.getElementById('G9').innerText = G9());
+        </script>
+                    <script>
+        const H9 = R(() => '');
+        table['H9'] = H9;
+        R(() => document.getElementById('H9').innerText = H9());
+        </script>
+                    <script>
+        const I9 = R(() => '');
+        table['I9'] = I9;
+        R(() => document.getElementById('I9').innerText = I9());
+        </script>
+                    <script>
+        const J9 = R(() => '');
+        table['J9'] = J9;
+        R(() => document.getElementById('J9').innerText = J9());
+        </script>
+                        <script>
+        const A10 = R(() => '');
+        table['A10'] = A10;
+        R(() => document.getElementById('A10').innerText = A10());
+        </script>
+                    <script>
+        const B10 = R(() => '');
+        table['B10'] = B10;
+        R(() => document.getElementById('B10').innerText = B10());
+        </script>
+                    <script>
+        const C10 = R(() => '');
+        table['C10'] = C10;
+        R(() => document.getElementById('C10').innerText = C10());
+        </script>
+                    <script>
+        const D10 = R(() => '');
+        table['D10'] = D10;
+        R(() => document.getElementById('D10').innerText = D10());
+        </script>
+                    <script>
+        const E10 = R(() => '');
+        table['E10'] = E10;
+        R(() => document.getElementById('E10').innerText = E10());
+        </script>
+                    <script>
+        const F10 = R(() => '');
+        table['F10'] = F10;
+        R(() => document.getElementById('F10').innerText = F10());
+        </script>
+                    <script>
+        const G10 = R(() => '');
+        table['G10'] = G10;
+        R(() => document.getElementById('G10').innerText = G10());
+        </script>
+                    <script>
+        const H10 = R(() => '');
+        table['H10'] = H10;
+        R(() => document.getElementById('H10').innerText = H10());
+        </script>
+                    <script>
+        const I10 = R(() => '');
+        table['I10'] = I10;
+        R(() => document.getElementById('I10').innerText = I10());
+        </script>
+                    <script>
+        const J10 = R(() => '');
+        table['J10'] = J10;
+        R(() => document.getElementById('J10').innerText = J10());
+        </script>
+    <script>
+function cells(range) {
+    const [start, end] = range.split(':');
+    const [startCol, startRow] = [start[0], parseInt(start.slice(1))];
+    const [endCol, endRow] = [end[0], parseInt(end.slice(1))];
+    const result = [];
+    for (let col = startCol.charCodeAt(0); col <= endCol.charCodeAt(0); col++) {
+        for (let row = startRow; row <= endRow; row++) {
+            result.push(table[String.fromCharCode(col) + row]);
+        }
+    }
+    return result;
+}
+</script><script>
+A1(() => 'Name');
+B1(() => 'Quantity');
+C1(() => 'Price');
+D1(() => 'Total price');
+
+A2(() => 'Duck');
+B2(() => 1);
+C2(() => 50);
+D2(() => B2() * C2());
+
+A3(() => 'Horse');
+B3(() => 100);
+C3(() => 5000);
+D3(() => B3() * C3());
+
+D10(() => cells('D2:D9').reduce((acc, cell) => acc + Number(cell()), 0));
+
+</script>
