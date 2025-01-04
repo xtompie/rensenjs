@@ -2,12 +2,6 @@
 
 **Rensenjs** is a reactive system for JavaScript. It creates values that update automatically when their dependencies change.
 
-## Features
-
-- Define reactive values (`R`) that update automatically.
-- Track dependencies efficiently.
-- Update values dynamically.
-
 ## Usage
 
 Example of defining and reacting to reactive values:
