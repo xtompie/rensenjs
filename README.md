@@ -44,7 +44,7 @@ Empty excell, in console type:
 ```javascript
 A1(() => 1);
 B1(() => 2);
-C1(() => A1() + A2());
+C1(() => A1() + B1());
 ```
 
 ### Cart
